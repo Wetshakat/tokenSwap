@@ -1,0 +1,45 @@
+{
+  "_format": "hh3-sol-build-info-1",
+  "id": "solc-0_8_28-289313da9754843d2f2256061f3f04a8ec757844",
+  "solcVersion": "0.8.28",
+  "solcLongVersion": "0.8.28+commit.7893614a",
+  "userSourceNameMap": {
+    "contracts/TokenSwap.sol": "project/contracts/TokenSwap.sol"
+  },
+  "input": {
+    "language": "Solidity",
+    "settings": {
+      "evmVersion": "cancun",
+      "optimizer": {
+        "enabled": true,
+        "runs": 200
+      },
+      "outputSelection": {
+        "*": {
+          "": [
+            "ast"
+          ],
+          "*": [
+            "abi",
+            "evm.bytecode",
+            "evm.deployedBytecode",
+            "evm.methodIdentifiers",
+            "metadata"
+          ]
+        }
+      },
+      "remappings": []
+    },
+    "sources": {
+      "project/contracts/interfaces/IERC20.sol": {
+        "content": "// SPDX-License-Identifier: UNLICENSED\npragma solidity ^0.8.28;\n\ninterface IERC20 {\n    function balanceOf(address tokenHolder) external view returns(uint256);\n    function transfer(address recipient, uint256 amount) external returns(bool);\n    function transferFrom(address owner, address spender, uint256 amount) external returns(bool);\n    function allowance(address owner, address spender) external view returns(uint256);\n    function approve(address _spender, uint256 amount) external returns(bool);\n    function name() external view returns(string memory);\n    function symbol() external view returns(string memory);\n    function mint(address reciever, uint256 amount) external returns(bool);\n}"
+      },
+      "project/contracts/lib/Events.sol": {
+        "content": "// SPDX-License-Identifier: UNLICENSED\npragma solidity ^0.8.28;\n\n\nlibrary Events {\n    event Transfer(address indexed sender, address indexed reciepient, uint256 indexed amount);\n    event Approve(address indexed owner, address indexed spender, uint256 amount);\n    event TransferFrom(address indexed owner, address indexed spender, uint256 amount);\n\n    event swapped(address indexed owner, string tokenASymbol, uint256 tokkenAamount, string tokenBSymbol, uint256 tokkenBamount);\n}"
+      },
+      "project/contracts/TokenSwap.sol": {
+        "content": "// SPDX-License-Identifier: UNLICENSED\npragma solidity ^0.8.28;\n\nimport { IERC20 } from\"./interfaces/IERC20.sol\";\nimport { Events } from \"./lib/Events.sol\";\n\n\n\ncontract TokenSwap {\n    IERC20 public tokenA;\n    IERC20 public tokenB;\n\nstring public tokenASymbol;\n    string public tokenBSymbol;\n\n    \n\n    uint public rate = 3;\n\n      constructor(address _tokenA, address _tokenB) {\n        tokenA = IERC20(_tokenA);\n        tokenB = IERC20(_tokenB);\n        getTokenASymbol();\n        getTokenBSymbol();\n    }\n\n    function getTokenASymbol()internal returns(string memory _aSymbol){\n        _aSymbol = tokenA.symbol();\n        tokenASymbol = _aSymbol;\n    }\n\n    function getTokenBSymbol()internal returns(string memory _bSymbol){\n        _bSymbol = tokenB.symbol();\n        tokenBSymbol = _bSymbol;\n    }\n\n    function swapAToB(uint _amount) external {\n\n        address sender = msg.sender;\n\n        require(tokenA.balanceOf(sender) >= _amount, \"Not enough TokenA to swap\");\n\n\n        uint swapped_ = _amount * rate;\n\n    \n        require(tokenA.transferFrom(sender, address(this), _amount), \"TokenA transfer failed\");\n\n        require(tokenB.transfer(sender, swapped_), \"TokenB transfer failed\");\n\n        emit Events.swapped(sender, tokenASymbol, _amount, tokenBSymbol, swapped_);\n    }\n\n\n    function swapBToA(uint _amount) external {\n        address sender = msg.sender;\n\n        require(tokenA.balanceOf(sender) >= _amount, \"Not enough TokenB to swap\");\n\n\n        uint swapped_ = _amount * rate;\n    \n        require(tokenB.transferFrom(sender, address(this), _amount), \"TokenA transfer failed\");\n\n        require(tokenA.transfer(sender, swapped_), \"TokenB transfer failed\");\n\n        emit Events.swapped(sender, tokenBSymbol, _amount, tokenASymbol, swapped_);\n\n    }\n\n    function addLiquidityTokenA (uint _amount) external {\n        tokenA.mint(address(this), _amount);\n    }\n\n    function addLiquidityTokenB (uint _amount) external {\n        tokenB.mint(address(this), _amount);\n    }\n\n    function OurBalanceBLT() external view returns(uint256 availableBalance_){\n        availableBalance_ = tokenA.balanceOf(address(this));\n    } \n\n    function OurBalanceSLT() external view returns(uint256 availableBalance_){\n        availableBalance_ = tokenA.balanceOf(address(this));\n    } \n\n}\n\n\n"
+      }
+    }
+  }
+}

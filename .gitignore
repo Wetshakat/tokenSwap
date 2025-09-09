@@ -1,0 +1,8 @@
+node_modules
+artifacts
+cache
+coverage
+typechain
+.env
+.DS_Store
+npm-debug.log*
